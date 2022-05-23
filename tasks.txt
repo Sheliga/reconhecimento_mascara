@@ -1,0 +1,16 @@
+
+OK -   Abrir imagem
+abrir video
+
+reconhecer com mascara
+reconhecer pessoa
+
+ver metodos de webcam
+
+documentar a instalação
+dependecias:
+    - build tools
+    - pipenv
+    - tensorflow
+    - imutils
+    - opencv

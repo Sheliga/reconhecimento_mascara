@@ -14,3 +14,4 @@ dependecias:
     - tensorflow
     - imutils
     - opencv
+    - face_recognizer

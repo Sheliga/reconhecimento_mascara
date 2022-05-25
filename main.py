@@ -2,7 +2,6 @@
 import cv2
 import numpy as np 
 
-
 from PIL import Image
 from PIL import ImageDraw
 
@@ -21,7 +20,7 @@ import os
 
 ###################################
 def detect_and_predict_mask(frame, faceNet, maskNet):
-    	# grab the dimensions of the frame and then construct a blob
+    # grab the dimensions of the frame and then construct a blob
 	# from it
 	(h, w) = frame.shape[:2]
 	blob = cv2.dnn.blobFromImage(frame, 1.0, (224, 224),
@@ -173,17 +172,22 @@ def abrir_imagem():
  
     print("print")
     
-def abrir_video(origem):
-    pathVideo = r"./videos/videoDoria.mp4"
+def abrir_video(origem, faceNet, maskNet):
+    pathVideo = origem
     
     captura = cv2.VideoCapture(pathVideo)
 
     while(1):
         ret, frame = captura.read()
+        scale_percent = 50 # percent of original size
+        width = int(frame.shape[1] * scale_percent / 100)
+        height = int(frame.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        frame = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
+        
+        detect_and_predict_mask(frame, faceNet, maskNet)
         findFace(frame)
         cv2.imshow("Video", frame)
-
-        
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             break
@@ -191,28 +195,25 @@ def abrir_video(origem):
     captura.release()
     cv2.destroyAllWindows()
 
-def abrir_webcam():
-    captura = cv2.VideoCapture(0)
+                                                                                       
 
-    while(1):
-        ret, frame = captura.read()
-        findFace(frame)
-        cv2.imshow("Video", frame)
 
-        
-        k = cv2.waitKey(30) & 0xff
-        if k == 27:
-            break
 
-    captura.release()
-    cv2.destroyAllWindows()                                                                                        
-
+########
+#Inicializando setup
 WEBCAM = 0
+#origem = WEBCAM
+origem = r"./videos/videoDoria.mp4"
+# load our serialized face detector model from disk
+prototxtPath = r"face_detector\deploy.prototxt"
+weightsPath = r"face_detector\res10_300x300_ssd_iter_140000.caffemodel"
+faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
-origem = WEBCAM
+# load the face mask detector model from disk
+maskNet = load_model("mask_detector.model")
 def main():
-    #abrir_video(origem = origem)
-    abrir_webcam()
+    abrir_video(origem, faceNet, maskNet)
+    #abrir_webcam()
     
 
 

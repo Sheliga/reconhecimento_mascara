@@ -2,8 +2,8 @@
 OK -   Abrir imagem
 abrir video
 
-reconhecer com mascara
-reconhecer pessoa
+OK reconhecer com mascara
+OK reconhecer pessoa 
 
 ver metodos de webcam
 
@@ -15,3 +15,5 @@ dependecias:
     - imutils
     - opencv
     - face_recognizer
+    - anaconda
+    - cmake

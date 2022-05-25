@@ -82,12 +82,14 @@ def identify_face(unknown_image_path, know_face_encodings, know_face_names):
     pil_image.show()
 
 
-image_path = r"./teste/MuskMask.jpg"
+#known_face_path = r"./src/conhecida/elon-musk.jpg"
+#image_path = r"./src/teste/MuskMask.jpg"
 
 
-known_face_path = r"./conhecida/elon-musk.jpg"
+known_face_path = r"./src/conhecida/arnailton.jpg"
+image_path = r"./src/teste/arnailtonMaskVerde .jpg"
 
-unknown_image_path = r"./desconhecida/salam-superJumbo.jpg"
+unknown_image_path = r"./src/desconhecida/salam-superJumbo.jpg"
 
 
 

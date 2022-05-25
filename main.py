@@ -169,8 +169,8 @@ def abrir_imagem():
     #Imagem de saida
     cv2.imshow("Frame", frame)
     cv2.waitKey(0) 
- 
-    print("print")
+
+
 def redimensionar_imagem(img, scale_percent):
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
@@ -186,8 +186,7 @@ def abrir_video(origem, faceNet, maskNet, scale_percent):
     while(1):
         ret, frame = captura.read()        
         frame = redimensionar_imagem(frame, scale_percent)
-        
-        
+
         #findFace(frame)
         
         ####
@@ -195,6 +194,7 @@ def abrir_video(origem, faceNet, maskNet, scale_percent):
 
         # loop over the detected face locations and their corresponding
         # locations
+        
         for (box, pred) in zip(locs, preds):
             # unpack the bounding box and predictions
             (startX, startY, endX, endY) = box
@@ -202,8 +202,8 @@ def abrir_video(origem, faceNet, maskNet, scale_percent):
 
             # determine the class label and color we'll use to draw
             # the bounding box and text
-            label = "Mask" if mask > withoutMask else "No Mask"
-            color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+            label = "Mascara" if mask > withoutMask else "Sem Mascara"
+            color = (0, 255, 0) if label == "Mascara" else (0, 0, 255)
 
             # include the probability in the label
             label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
@@ -211,6 +211,9 @@ def abrir_video(origem, faceNet, maskNet, scale_percent):
             # display the label and bounding box rectangle on the output
             # frame
             cv2.putText(frame, label, (startX, startY - 10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+            name = "nome"
+            cv2.putText(frame, name, (startX, startY - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
         ####
@@ -240,6 +243,7 @@ faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
 # load the face mask detector model from disk
 maskNet = load_model("mask_detector.model")
+
 def main():
     abrir_video(origem, faceNet, maskNet, scale_percent)
     #abrir_webcam()

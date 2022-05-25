@@ -171,19 +171,22 @@ def abrir_imagem():
     cv2.waitKey(0) 
  
     print("print")
-    
-def abrir_video(origem, faceNet, maskNet):
+def redimensionar_imagem(img, scale_percent):
+    width = int(img.shape[1] * scale_percent / 100)
+    height = int(img.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+    return img
+
+def abrir_video(origem, faceNet, maskNet, scale_percent):
     pathVideo = origem
     
     captura = cv2.VideoCapture(pathVideo)
 
     while(1):
-        ret, frame = captura.read()
-        scale_percent = 50 # percent of original size
-        width = int(frame.shape[1] * scale_percent / 100)
-        height = int(frame.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        frame = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
+        ret, frame = captura.read()        
+        frame = redimensionar_imagem(frame, scale_percent)
+        
         
         #findFace(frame)
         
@@ -228,6 +231,8 @@ def abrir_video(origem, faceNet, maskNet):
 WEBCAM = 0
 #origem = WEBCAM
 origem = r"./videos/videoDoria.mp4"
+scale_percent = 40 # percent of original size
+
 # load our serialized face detector model from disk
 prototxtPath = r"face_detector\deploy.prototxt"
 weightsPath = r"face_detector\res10_300x300_ssd_iter_140000.caffemodel"
@@ -236,7 +241,7 @@ faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 # load the face mask detector model from disk
 maskNet = load_model("mask_detector.model")
 def main():
-    abrir_video(origem, faceNet, maskNet)
+    abrir_video(origem, faceNet, maskNet, scale_percent)
     #abrir_webcam()
     
 

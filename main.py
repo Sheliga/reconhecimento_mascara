@@ -4,7 +4,6 @@ import numpy as np
 
 from PIL import Image
 from PIL import ImageDraw
-
 import face_recognition
 
 
@@ -13,8 +12,6 @@ import face_recognition
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
-from imutils.video import VideoStream
-import imutils
 import time
 import os
 
@@ -89,6 +86,7 @@ def findFace(image_path):
     face_locations = face_recognition.face_locations(image)
     #print(face_locations)
     print(len(face_locations))
+    return str(len(face_locations))
 
 
 def compareFaces(known_image_path, unknown_image_path):
@@ -123,18 +121,15 @@ def pullFaces(image_path):
         #pil_image.save(f'{top}.jpg')
 
 def identify_face(unknown_image_path, know_face_encodings, know_face_names):
+    print("unknow")
+    print(unknown_image_path)
     #carregar imagem de teste
+    unknown_image_path = cv2.cvtColor(unknown_image_path, cv2.COLOR_BGR2RGB)
     test_image = face_recognition.load_image_file(unknown_image_path)
 
     #encontrar faces na imagem de teste
     face_locations = face_recognition.face_locations(test_image)
     face_encondings = face_recognition.face_encodings(test_image, face_locations)   
-
-    #converter pro formato PIL
-    pil_image = Image.fromarray(test_image)
-
-    #criar uma instancia da classe ImageDraw
-    draw = ImageDraw.Draw(pil_image)
 
     # Loop pelos rostos encontrador na imagem teste 
     for(top, right, bottom, left), face_enconding in zip(face_locations, face_encondings):
@@ -146,28 +141,22 @@ def identify_face(unknown_image_path, know_face_encodings, know_face_names):
         if True in matches:
             first_match_index = matches.index(True)
             name = know_face_names[first_match_index]
+            print(name)
 
-    # Desenhando a marcação
-    draw.rectangle(((left, top), (right, bottom)), outline = (0, 0, 0))
 
-    #desenhando o rotulo
-    text_width, text_height = draw.textsize(name)
-    draw.rectangle(((left, bottom - text_height - 10), (right, bottom)), fill = (0, 0, 0), outline = (0, 0, 0))
-    draw.text((left + 6, bottom - text_height - 5), name, fill = (255, 255, 255, 255))
 
-    del draw
-
-    pil_image.show()
 
 ####
-def carregar_imagem():
-    imagem = cv2.imread("conhecido/img1.jpg")
+def carregar_imagem(path):
+    imagem = cv2.imread(path)
     return imagem
 
-def abrir_imagem():
-    frame = carregar_imagem()
+def abrir_imagem(path):
+    frame = carregar_imagem(path)
     #Imagem de saida
     cv2.imshow("Frame", frame)
+    findFace(frame)
+    
     cv2.waitKey(0) 
 
 
@@ -178,7 +167,7 @@ def redimensionar_imagem(img, scale_percent):
     img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
     return img
 
-def abrir_video(origem, faceNet, maskNet, scale_percent):
+def abrir_video(origem, faceNet, maskNet, scale_percent, image_path, know_face_encodings, know_face_names):
     pathVideo = origem
     
     captura = cv2.VideoCapture(pathVideo)
@@ -194,6 +183,7 @@ def abrir_video(origem, faceNet, maskNet, scale_percent):
 
         # loop over the detected face locations and their corresponding
         # locations
+        
         
         for (box, pred) in zip(locs, preds):
             # unpack the bounding box and predictions
@@ -212,9 +202,12 @@ def abrir_video(origem, faceNet, maskNet, scale_percent):
             # frame
             cv2.putText(frame, label, (startX, startY - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-            name = "nome"
+            name = findFace(frame)
+            
+            ####
             cv2.putText(frame, name, (startX, startY - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+            #identify_face(image_path, know_face_encodings, know_face_names)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
         ####
         cv2.imshow("Video", frame)
@@ -244,24 +237,43 @@ faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 # load the face mask detector model from disk
 maskNet = load_model("mask_detector.model")
 
+
+#reconhecimento do individuo
+known_face_path = r"D:\Projetos\Python\reconhecimento_mascara\src\conhecida\elon-musk.jpg"
+image_path = r"D:\Projetos\Python\reconhecimento_mascara\src\teste\MuskMask.jpg"
+
+unknown_image_path = r"src/desconhecida/salam-superJumbo.jpg"
+
+#
+individuo = face_recognition.load_image_file(known_face_path)
+identify_face_encondig = face_recognition.face_encodings(individuo)[0]
+
+#criando vetor de encondigs e nomes
+know_face_encodings = [
+    identify_face_encondig
+]
+know_face_names = [
+    "Elon Musk"
+]
+
+
+def teste(image_path, know_face_encodings, know_face_names):
+    frame = carregar_imagem(image_path)
+    #Imagem de saida
+    cv2.imshow("Frame", frame)
+    findFace(frame)
+    identify_face(frame, know_face_encodings, know_face_names)
+    cv2.waitKey(0)
 def main():
-    abrir_video(origem, faceNet, maskNet, scale_percent)
+    #abrir_video(origem, faceNet, maskNet, scale_percent, image_path, know_face_encodings, know_face_names)
     #abrir_webcam()
+    teste(image_path, know_face_encodings, know_face_names)
+    
+    #abrir_imagem(image_path)
     
 
 
 
-
-
-
-
-"""
-# Carregar modelo de detecção
-prototxtPath = r"face_detector\deploy.prototxt"
-weightsPath = r"face_detector\res10_300x300_ssd_iter_140000.caffemodel"
-faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
-
-"""
 if __name__ == '__main__':
     print("Main do projeto")
     main()

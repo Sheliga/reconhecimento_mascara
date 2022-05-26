@@ -1,4 +1,3 @@
-# import the necessary packages
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.layers import AveragePooling2D
@@ -20,17 +19,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-# initialize the initial learning rate, number of epochs to train for,
-# and batch size
+#inicializando a taxa de aprendizagem inicial e o numero de epochs
 INIT_LR = 1e-4
 EPOCHS = 20
 BS = 32
 
-DIRECTORY = r"C:\Mask Detection\CODE\Face-Mask-Detection-master\dataset"
+DIRECTORY = r"D:\Projetos\Python\reconhecimento_mascara\dataset"
 CATEGORIES = ["with_mask", "without_mask"]
 
-# grab the list of images in our dataset directory, then initialize
-# the list of data (i.e., images) and class images
+# pegar images do diretorio e inicializar a lista de dados e classes da imagem
 print("[INFO] loading images...")
 
 data = []
@@ -47,7 +44,7 @@ for category in CATEGORIES:
     	data.append(image)
     	labels.append(category)
 
-# perform one-hot encoding on the labels
+# realizar o one-hot encoding dos labels
 lb = LabelBinarizer()
 labels = lb.fit_transform(labels)
 labels = to_categorical(labels)
@@ -58,7 +55,7 @@ labels = np.array(labels)
 (trainX, testX, trainY, testY) = train_test_split(data, labels,
 	test_size=0.20, stratify=labels, random_state=42)
 
-# construct the training image generator for data augmentation
+# construir o gerador de imagem de treinamento de dados
 aug = ImageDataGenerator(
 	rotation_range=20,
 	zoom_range=0.15,
@@ -68,13 +65,13 @@ aug = ImageDataGenerator(
 	horizontal_flip=True,
 	fill_mode="nearest")
 
-# load the MobileNetV2 network, ensuring the head FC layer sets are
-# left off
+# carregar a rede MobileNetV2
 baseModel = MobileNetV2(weights="imagenet", include_top=False,
 	input_tensor=Input(shape=(224, 224, 3)))
 
-# construct the head of the model that will be placed on top of the
-# the base model
+
+#construir o cabeçalho do modelo que será colocada em cima do
+#o modelo básico
 headModel = baseModel.output
 headModel = AveragePooling2D(pool_size=(7, 7))(headModel)
 headModel = Flatten(name="flatten")(headModel)
@@ -82,16 +79,15 @@ headModel = Dense(128, activation="relu")(headModel)
 headModel = Dropout(0.5)(headModel)
 headModel = Dense(2, activation="softmax")(headModel)
 
-# place the head FC model on top of the base model (this will become
-# the actual model we will train)
+
 model = Model(inputs=baseModel.input, outputs=headModel)
 
-# loop over all layers in the base model and freeze them so they will
-# *not* be updated during the first training process
+# faz um loop sobre todas as camadas no modelo base e as congela para que 
+# *não* sejam atualizadas durante o primeiro processo de treinamento
 for layer in baseModel.layers:
 	layer.trainable = False
 
-# compile our model
+# compilar o modelo
 print("[INFO] compiling model...")
 opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
 model.compile(loss="binary_crossentropy", optimizer=opt,
@@ -106,22 +102,23 @@ H = model.fit(
 	validation_steps=len(testX) // BS,
 	epochs=EPOCHS)
 
-# make predictions on the testing set
+# fazer previsoes no dataset
 print("[INFO] evaluating network...")
 predIdxs = model.predict(testX, batch_size=BS)
 
-# for each image in the testing set we need to find the index of the
-# label with corresponding largest predicted probability
+# para cada imagem no conjunto de teste, precisamos encontrar o índice do rótulo com a
+# maior probabilidade prevista correspondente
 predIdxs = np.argmax(predIdxs, axis=1)
 
-# show a nicely formatted classification report
+# mostra um relatório de classificação
 print(classification_report(testY.argmax(axis=1), predIdxs,
 	target_names=lb.classes_))
 
-# serialize the model to disk
+# serializar o modelo
 print("[INFO] saving mask detector model...")
 model.save("mask_detector.model", save_format="h5")
 
+# plotar a taxa de perda e acuracia
 # plot the training loss and accuracy
 N = EPOCHS
 plt.style.use("ggplot")
